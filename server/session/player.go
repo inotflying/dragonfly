@@ -827,9 +827,27 @@ func stacksToIngredientItems(inputs []recipe.Item) []protocol.ItemDescriptorCoun
 func creativeItems() []protocol.CreativeItem {
 	it := make([]protocol.CreativeItem, 0, len(creative.Items()))
 	for index, i := range creative.Items() {
+		st := deleteDamage(stackFromItem(i))
+		// Strip block entity NBT from creative item entries. NBT causes issues
+		// with the creative inventory item groups for blocks such as signs and
+		// skulls.
+		if b, ok := i.Item().(world.Block); ok {
+			if nbt, ok := b.(world.NBTer); ok {
+				for k := range nbt.EncodeNBT() {
+					delete(st.NBTData, k)
+				}
+
+				// Banner items are still expected to have the Type NBT tag, while
+				// the other tags are discarded.
+				if banner, ok := b.(block.Banner); ok {
+					st.NBTData["Type"] = int32(boolByte(banner.Illager))
+				}
+			}
+		}
+
 		it = append(it, protocol.CreativeItem{
 			CreativeItemNetworkID: uint32(index) + 1,
-			Item:                  deleteDamage(stackFromItem(i)),
+			Item:                  st,
 		})
 	}
 	return it
