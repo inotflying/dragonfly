@@ -107,7 +107,7 @@ func (b Bucket) UseOnBlock(pos cube.Pos, face cube.Face, _ mgl64.Vec3, tx *world
 		return b.fillFrom(pos, tx, ctx)
 	}
 	liq := b.Content.liquid.WithDepth(8, false)
-	if bl := tx.Block(pos); canDisplace(bl, liq) || replaceableWith(bl, liq) {
+	if bl := tx.Block(pos); canDisplace(bl, liq) {
 		tx.SetLiquid(pos, liq)
 	} else if bl := tx.Block(pos.Side(face)); canDisplace(bl, liq) || replaceableWith(bl, liq) {
 		tx.SetLiquid(pos.Side(face), liq)
